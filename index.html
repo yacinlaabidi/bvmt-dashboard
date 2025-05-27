@@ -1,35 +1,131 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>BVMT2025 - Tableau de Bord</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BVMT Dashboard Sécurisé</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f2f2f2;
-      padding: 20px;
+      padding: 40px;
+      background: #f4f4f4;
+    }
+    #login-container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    input {
+      margin: 10px;
+      padding: 10px;
+      width: 90%;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    #dashboard {
+      margin-top: 20px;
     }
     iframe {
       width: 100%;
-      height: 90vh;
+      height: 600px;
       border: none;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    }
-    h1 {
-      color: #333;
     }
   </style>
 </head>
 <body>
 
-  <h1>📊 Tableau de bord BVMT2025</h1>
+  <div id="login-container">
+    <h2>Connexion</h2>
+    <input type="email" id="email" placeholder="Email" /><br>
+    <input type="password" id="password" placeholder="Mot de passe" /><br>
+    <button onclick="login()">Se connecter</button>
+    <button onclick="signup()">Créer un compte</button><br><br>
+    <button onclick="googleLogin()">Connexion avec Google</button>
+  </div>
 
-  <iframe 
-    title="BVMT2025" 
-    src="https://app.powerbi.com/view?r=eyJrIjoiOTg5NzZhZjctNjA0Zi00ZjI3LTgzYTMtNTRhODc2MDg3OTA1IiwidCI6ImRiZDY2NjRkLTRlYjktNDZlYi05OWQ4LTVjNDNiYTE1M2M2MSIsImMiOjl9" 
-    allowFullScreen="true">
-  </iframe>
+  <div id="dashboard" style="display:none;">
+    <h2>Bienvenue sur le Dashboard BVMT</h2>
+    <button onclick="logout()">Déconnexion</button>
+    <br><br>
+    <iframe title="BVMT2025" src="https://app.powerbi.com/view?r=eyJrIjoiOTg5NzZhZjctNjA0Zi00ZjI3LTgzYTMtNTRhODc2MDg3OTA1IiwidCI6ImRiZDY2NjRkLTRlYjktNDZlYi05OWQ4LTVjNDNiYTE1M2M2MSIsImMiOjl9" allowFullScreen="true"></iframe>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOtuhdkPWmk344YBicD7Kul10J939sTvA",
+      authDomain: "bvmt-dashboard.firebaseapp.com",
+      projectId: "bvmt-dashboard",
+      storageBucket: "bvmt-dashboard.appspot.com",
+      messagingSenderId: "940908321524",
+      appId: "1:940908321524:web:2d48ea8ab954b4b993dca1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    // Création de compte
+    window.signup = () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if (!email || !password) return alert("Champs requis !");
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("✅ Compte créé. Connectez-vous."))
+        .catch((error) => alert("Erreur : " + error.message));
+    };
+
+    // Connexion
+    window.login = () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .catch((error) => alert("Erreur : " + error.message));
+    };
+
+    // Google Login
+    window.googleLogin = () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider)
+        .catch((error) => alert("Erreur Google : " + error.message));
+    };
+
+    // Déconnexion
+    window.logout = () => {
+      signOut(auth);
+    };
+
+    // Affichage dynamique selon statut
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+      } else {
+        document.getElementById("login-container").style.display = "block";
+        document.getElementById("dashboard").style.display = "none";
+      }
+    });
+  </script>
 
 </body>
 </html>
